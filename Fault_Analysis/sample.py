@@ -27,9 +27,9 @@ def feature_engineer(df, window=100):
     curr_cols = ['Ia', 'Ib', 'Ic']  # Phase currents
     all_cols = volt_cols + curr_cols  # All waveform measurement columns
 
-    # -----------------------------
+
     # 1. TIME-DOMAIN FEATURES
-    # -----------------------------
+
     
     # Rolling RMS: measures effective power level / wave magnitude
     for col in all_cols:
@@ -51,9 +51,8 @@ def feature_engineer(df, window=100):
     for col in all_cols:
         df[f'{col}_mean'] = df[col].rolling(window).mean()
 
-    # -----------------------------
+
     # 2. FREQUENCY-DOMAIN FEATURES
-    # -----------------------------
 
     # Function to compute dominant frequency from FFT of a window
     def fft_dominant_freq(arr, sampling_rate=1000):
@@ -89,9 +88,9 @@ def feature_engineer(df, window=100):
             lambda x: fft_energy(x), raw=False
         )
 
-    # -----------------------------
+
     # 3. PHASE RELATIONSHIP FEATURES
-    # -----------------------------
+
 
     # Voltage imbalance: measures deviation among phase voltages
     df['voltage_imbalance'] = df[volt_cols].std(axis=1) / df[volt_cols].mean(axis=1)
@@ -109,9 +108,8 @@ def feature_engineer(df, window=100):
     df['Ibc'] = df['Ib'] - df['Ic']
     df['Ica'] = df['Ic'] - df['Ia']
 
-    # -----------------------------
     # 4. POWER FEATURES
-    # -----------------------------
+
 
     # Total real power: sum of per-phase instantaneous power
     df['P_total'] = (
