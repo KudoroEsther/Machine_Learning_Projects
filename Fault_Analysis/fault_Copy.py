@@ -26,9 +26,9 @@ from sklearn.pipeline import Pipeline
 import joblib
 
 #Loading data
-url = r"C:\Users\owner\OneDrive\Desktop\ML_projects\Fault_Analysis\merged_dataset.csv"
+# url = r"C:\Users\owner\OneDrive\Desktop\ML_projects\Fault_Analysis\merged_dataset.csv"
 
-# url = r"C:\Users\ncc333\Desktop\ML_projects\Fault_Analysis\merged_dataset.csv"
+url = r"C:\Users\ncc333\Desktop\ML_projects\Fault_Analysis\merged_dataset.csv"
 def load_data(url):
     df = pd.read_csv(url, sep=",")
     return df
@@ -135,30 +135,30 @@ models = {
 results = {}
 
 for model_name, model in models.items():
-    print(f"Training {model_name}...")
+    # print(f"Training {model_name}...")
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred)
     results[model_name] = accuracy
-    print(f"{model_name} Accuracy: {accuracy:.3f}")
+    # print(f"{model_name} Accuracy: {accuracy:.3f}")
 
     #Adding confusion matrix
-    cm = confusion_matrix(y_test, y_pred)
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, 
-                                display_labels=['No fault (0)',"LLLG fault (1)", "LG fault (2)", "LLG fault (3)" ])
-    print(classification_report(y_test, y_pred, zero_division=1))
+    # cm = confusion_matrix(y_test, y_pred)
+    # disp = ConfusionMatrixDisplay(confusion_matrix=cm, 
+                                # display_labels=['No fault (0)',"LLLG fault (1)", "LG fault (2)", "LLG fault (3)" ])
+    # classification_report(y_test, y_pred, zero_division=1)
 
     #Plotting with model name as title
-    disp.plot(cmap='Blues')
-    plt.title(f"Confusion Matrix: {model_name}")
-    plt.xticks(rotation = 25)
-    plt.tight_layout()
-    plt.show()
+    # disp.plot(cmap='Blues')
+    # plt.title(f"Confusion Matrix: {model_name}")
+    # plt.xticks(rotation = 25)
+    # plt.tight_layout()
+    # plt.show()
 
-result_df = pd.DataFrame(results.items(), columns=["Model", "Accuracy"])
-result_df = result_df.sort_values(by="Accuracy", ascending=False)
-result_df.reset_index(drop=True)
-result_df
+# result_df = pd.DataFrame(results.items(), columns=["Model", "Accuracy"])
+# result_df = result_df.sort_values(by="Accuracy", ascending=False)
+# result_df.reset_index(drop=True)
+# result_df
 
 
 #Hyperparameter tuning
@@ -168,18 +168,19 @@ rf = RandomForestClassifier()
 rf.get_params()
 
 param_grid = {
-    "model__n_estimators": [10, 50, 60],
-    "model__max_depth": [10, 20, 30],
-    "model__min_samples_split": [2, 5, 10],
+    "model__n_estimators": [10, 20, 25],
+    "model__max_depth": [10, 20, 25],
+    "model__min_samples_split": [2, 5, 7],
     "model__min_samples_leaf": [1, 2, 4]
 }
 
-random_search = RandomizedSearchCV(estimator=pipeline, param_distributions=param_grid, n_iter=5, cv=5, verbose=2, random_state=234, n_jobs=-1)
+random_search = RandomizedSearchCV(estimator=pipeline, param_distributions=param_grid, n_iter=5, cv=5, verbose=2, random_state=234, n_jobs=1)
 random_search.fit(X_train, y_train)
 print(f"Best parameters for Random Forest {random_search.best_params_}")
 
 #Cross validation
 best_pipeline = random_search.best_estimator_
+
 #might be x_train againt y_train
 cv_score = cross_val_score(best_pipeline, X, y, cv=5)
 # cv_score = cross_val_score(best_model, X_train, y_train, cv=5)
