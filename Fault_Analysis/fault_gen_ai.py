@@ -128,3 +128,5 @@ def diagnose(line: FaultFeatures):
         "confidence": round(float(proba), 3),
         "diagnosis": genai_response
     }
+
+## ADD LLM AND INVOKE PROMPT
