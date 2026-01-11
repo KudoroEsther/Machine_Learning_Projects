@@ -60,3 +60,71 @@ def predict(line: FaultFeatures):
         "fault": prediction,
         "confidence": round(float(proba), 3)
     }
+
+#GENAI Integration
+FAULT_EXPLANATIONS = {
+    "LLLG fault": {
+        "name": "Three-Phase-to-Ground Fault",
+        "description": "All three phases are shorted to ground."
+    },
+    "LLG fault": {
+        "name": "Double Line-to-Ground Fault",
+        "description": "Two phases are shorted together and to ground."
+    },
+    "LG fault": {
+        "name": "Single Line-to-Ground Fault",
+        "description": "One phase is shorted to ground."
+    }
+}
+
+def build_prompt(fault_label: str, confidence: float):
+
+    fault_info = FAULT_EXPLANATIONS[fault_label]
+
+    return f"""
+You are an electrical fault diagnosis assistant.
+
+The ML system has detected the following fault:
+
+Fault label: {fault_label}
+Fault name: {fault_info['name']}
+Confidence: {confidence * 100:.1f}%
+
+Explain:
+1. What this fault means in a power transmission system
+2. Common causes
+3. Step-by-step practical troubleshooting actions
+4. Safety precautions for technicians
+
+Do not guess the fault.
+Do not ask for measurements.
+"""
+
+
+@app.post("/diagnose")
+def diagnose(line: FaultFeatures):
+
+    # Step 1: ML prediction
+    features = pd.DataFrame([line.dict()])
+    prediction = pipeline.predict(features)[0]
+    proba = pipeline.predict_proba(features).max()
+
+    if prediction == "No fault":
+        return {
+            "status": "no_fault",
+            "confidence": round(float(proba), 3),
+            "message": "System operating normally. No fault detected."
+        }
+
+    # Step 2: Build GenAI prompt
+    prompt = build_prompt(prediction, proba)
+
+    # Step 3: Call LLM (pseudo-code)
+    genai_response = llm.invoke(prompt)
+
+    return {
+        "status": "fault",
+        "fault": prediction,
+        "confidence": round(float(proba), 3),
+        "diagnosis": genai_response
+    }
