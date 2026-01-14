@@ -25,6 +25,26 @@ from utils_openai import (
     load_and_chunk_documents
 )
 
+"""
+WORKFLOW
+
+Load API Key
+initialize llm
+load documents
+chunk documents (plan to use recursive splitter then semantic splitter)
+embed
+persist to chromadb
+define tools (retriever(plan to use mmr), retrieve documents)
+define system prompt
+bind tools to llm
+nodes: start, build_query_ should_continue, generate_answer, end
+define assitant and conditional nodes
+build stategraph
+define query agent
+test agent
+
+"""
+
 # Load API key
 api_key = setup_openai_api()
 print("API key loaded successfully!")
@@ -35,52 +55,21 @@ print(f"LLM initialized: {llm.model_name}")
 
 
 # Document Collection
-file_path = r""
+# the sizes are tentative
+chunks = load_and_chunk_documents(
+    data_path="",
+    chunk_size=1000,
+    chunk_overlap=100)
+print("Documents loaded and chunked")
 
-loader = PyPDFDirectoryLoader(file_path)
-pages = []
-
-# async for page in loader.alazy_load():
-#     pages.append(page)
-
-pages = loader.load()
-    
-print("Documents loaded.")
-
-# Chunking
-text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=500,
-    chunk_overlap=50,
-    length_function=len
-)
-
-doc_splits = text_splitter.split_documents(pages)
-
-print(f"Sample chunk: \n{doc_splits[0].page_content[:200]}...")
-print("Documents chunked")
-
-chunks = load_and_chunk_documents()
 
 # Vector store and embedding
-
 embeddings = create_embeddings(api_key)
 print("Embeddings model initialized")
 
 vectorstore = create_vectorstore(
     embeddings=embeddings
 )
-
-chroma_path = "./chroma_db_fault_rag"
-vectorstore = Chroma(
-    collection_name="agentic_fault_docs",
-    persist_directory=chroma_path,
-    embedding_function=embeddings
-)
-
-#Add documents
-vectorstore.add_documents(documents=doc_splits)
-print(f"Vector store created with {len(doc_splits)} chunks")
-print(f"Persisted to: {chroma_path}")
 
 #Retriever toool
 @tool
