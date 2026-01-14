@@ -10,7 +10,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from dotenv import load_dotenv
 from IPython.display import Image, display
-from typing import Literal
+from typing import Literal, TypedDict, Optional
 import os
 
 print("All imports successful")
@@ -134,3 +134,72 @@ When you retrieve documents, cite them in your answer. If documents don't contai
 """)
 
 print("System prompt configured")
+
+# Defining Stategraph and using TypedDict instead of MessagesState
+class FaultAgentState(TypedDict):
+    fault_label: str
+    confidence: float
+    retrieved_docs: Optional[str]
+    final_answer: Optional[str]
+
+
+# Defining nodes
+# Decide retrieval query
+def build_query(state: FaultAgentState):
+    fault = state["fault_label"]
+    return {
+        "query": f"IEEE standard explanation causes mitigation of {fault} in transmission lines"
+    }
+
+#Final diagnosis
+def generate_answer(state: FaultAgentState):
+
+    prompt = f"""
+Fault detected by ML system:
+Fault: {state['fault_label']}
+Confidence: {state['confidence'] * 100:.1f}%
+
+IEEE / Protection Manual Context:
+{state['retrieved_docs']}
+
+Provide:
+1. Explanation of the fault
+2. Common causes
+3. Step-by-step resolution
+4. Safety precautions
+"""
+
+    response = llm.invoke(prompt)
+    return {"final_answer": response}
+
+builder = StateGraph(FaultAgentState)
+
+builder.add_node("build_query", build_query)
+builder.add_node("generate_answer", generate_answer)
+
+builder.add_edge(START, "build_query")
+builder.add_edge("")
+
+# # Bind tool to LLM
+# tools = [retrieve_documents]
+# llm_with_tools = llm.bind_tools(tools)
+
+# def assistant(state: MessagesState) -> dict:
+#     """
+#     Assistant node - decides whether to retrieve or answer directly.
+#     """
+#     messages = [system_prompt] + state["messages"]
+#     response = llm_with_tools.invoke(messages)
+#     return {"messages": [response]}
+
+# def should_continue(state: MessagesState) -> Literal["tools", "__end__"]:
+#     """
+#     Decide whether to call tools or finish.
+#     """
+#     last_message = state["messages"][-1]
+
+#     if last_message.tool_calls:
+#         return "tools"
+#     return "__end__"
+# print("Agent nodes defined")
+
