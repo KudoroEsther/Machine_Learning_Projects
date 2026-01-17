@@ -28,7 +28,9 @@ import joblib
 #Loading data
 # url = r"C:\Users\owner\OneDrive\Desktop\ML_projects\Fault_Analysis\merged_dataset.csv"
 
-url = r"C:\Users\ncc333\Desktop\ML_projects\Fault_Analysis\merged_dataset.csv"
+# url = r"C:\Users\ncc333\Desktop\ML_projects\Fault_Analysis\merged_dataset.csv"
+
+url= r"C:\Users\owner\Desktop\ML_projects\Fault_Analysis\merged_dataset.csv"
 def load_data(url):
     df = pd.read_csv(url, sep=",")
     return df

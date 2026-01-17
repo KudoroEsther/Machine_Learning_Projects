@@ -112,11 +112,24 @@ system_prompt = system_prompt_def()
 print(" System prompt configured")
 
 # Defining Stategraph and using TypedDict instead of MessagesState
-class FaultAgentState(TypedDict):
+class FaultAgentState(MessagesState):
     fault_label: str
     confidence: float
     retrieved_docs: Optional[str]
     final_answer: Optional[str]
+
+
+# Bind tool to LLM
+tools = [retrieve_documents]
+llm_with_tools = llm.bind_tools(tools)
+
+def assistant(state: FaultAgentState) -> dict:
+    """
+    Assistant node - decides whether to retrieve or answer directly.
+    """
+    messages = [system_prompt] + state["messages"]
+    response = llm_with_tools.invoke(messages)
+    return {"messages": [response]}
 
 
 # Defining nodes
@@ -128,8 +141,7 @@ def build_query(state: FaultAgentState):
     }
 
 #Final diagnosis
-def generate_answer(state: FaultAgentState):
-
+def finalizer(state: FaultAgentState):
     prompt = f"""
 Fault detected by ML system:
 Fault: {state['fault_label']}
@@ -148,13 +160,31 @@ Provide:
     response = llm.invoke(prompt)
     return {"final_answer": response}
 
+def should_continue(state: FaultAgentState) -> Literal["tools", "finalizer"]:
+    """
+    Decide whether to call tools or finish.
+    """
+    last_message = state["messages"][-1]
+
+    if last_message.tool_calls:
+        return "tools"
+    return "__end__"
+print("Agent nodes defined")
+
 builder = StateGraph(FaultAgentState)
 
 builder.add_node("build_query", build_query)
-builder.add_node("generate_answer", generate_answer)
+builder.add_node("finalizer", finalizer)
+builder.add_node("assistant", assistant)
+
 
 builder.add_edge(START, "build_query")
-builder.add_edge("")
+builder.add_edge("build_query", "assistant")
+builder.add_conditional_edges(
+    "assistant", 
+    should_continue,
+    {"tools": "tools", "finalizer": "finalizer"})
+builder.add_edge(should_continue, END)
 
 # # Bind tool to LLM
 # tools = [retrieve_documents]

@@ -9,6 +9,25 @@ from dotenv import load_dotenv
 
 import numpy as np
 import pandas as pd
+
+from utils_openai import (
+    setup_openai_api,
+    create_llm,
+    create_embeddings,
+    create_llm,
+    create_vectorstore,
+    system_prompt_def,
+    load_and_chunk_documents
+)
+
+
+load_dotenv()
+api_key = setup_openai_api()
+
+# Initialize RAG components
+embeddings = create_embeddings(api_key)
+llm = create_llm(api_key, temperature=0)
+
 # Loading the saved model
 pipeline = joblib.load("detection_pipeline.pkl")
 
