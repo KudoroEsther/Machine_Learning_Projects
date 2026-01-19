@@ -1,3 +1,5 @@
+#THIS IS MEANT TO BE THE AGENTIC RAG (WE CAN USE EXTENDED MESSAGESSTATE INSTEAD OF TYPEDDICT)
+
 from langgraph.graph import START, END, StateGraph, MessagesState
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import ToolNode

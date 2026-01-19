@@ -1,3 +1,5 @@
+# THIS IS WORKING JUST AS A PLAIN LLM NOT RAG
+
 from fault_Copy import FeatureEngineer
 
 from fastapi import FastAPI
