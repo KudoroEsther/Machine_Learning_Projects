@@ -67,75 +67,6 @@ print("API key loaded successfully!")
 llm = create_llm(api_key, temperature=0)
 print(f"LLM initialized: {llm.model_name}")
 
-
-# Loading the saved model
-pipeline = joblib.load("detection_pipeline.pkl")
-
-
-#Initializing the application
-app = FastAPI()
-
-#creating the pydantic model
-class FaultFeatures(BaseModel):
-    Va: float
-    Vb: float
-    Vc: float
-    Ia: float
-    Ib: float
-    Ic: float
-
-# creating endpoints
-@app.get("/")
-def welcome():
-    return{
-        "message": "Welcome to Transmission Line Fault Predictor"
-    }
-
-
-@app.post("/predict")
-def predict(line: FaultFeatures):
-
-    features = pd.DataFrame([{
-        "Va": line.Va,
-        "Vb": line.Vb,
-        "Vc": line.Vc,
-        "Ia": line.Ia,
-        "Ib": line.Ib,
-        "Ic": line.Ic
-    }])
-
-    prediction = pipeline.predict(features)[0]
-    proba = pipeline.predict_proba(features).max()
-
-    if prediction == "No fault":
-        return {
-            "status": "no_fault",
-            "fault_lable": prediction,
-            "confidence": round(float(proba), 3)
-        }
-
-    return {
-        "status": "fault",
-        "fault_label": prediction,
-        "confidence": round(float(proba), 3)
-    }
-
-#GENAI Integration
-FAULT_EXPLANATIONS = {
-    "LLLG fault": {
-        "name": "Three-Phase-to-Ground Fault",
-        "description": "All three phases are shorted to ground."
-    },
-    "LLG fault": {
-        "name": "Double Line-to-Ground Fault",
-        "description": "Two phases are shorted together and to ground."
-    },
-    "LG fault": {
-        "name": "Single Line-to-Ground Fault",
-        "description": "One phase is shorted to ground."
-    }
-}
-
 # Document Collection
 # the sizes are tentative
 data_path = r"C:\Users\ncc333\Desktop\ML_projects\Fault_Analysis\Fault_docs"
@@ -283,27 +214,4 @@ answer = builder_agent.invoke({
     "retrieved_docs": "",
     "final_answer": ""
 })
-
-# # Bind tool to LLM
-# tools = [retrieve_documents]
-# llm_with_tools = llm.bind_tools(tools)
-
-# def assistant(state: MessagesState) -> dict:
-#     """
-#     Assistant node - decides whether to retrieve or answer directly.
-#     """
-#     messages = [system_prompt] + state["messages"]
-#     response = llm_with_tools.invoke(messages)
-#     return {"messages": [response]}
-
-# def should_continue(state: MessagesState) -> Literal["tools", "__end__"]:
-#     """
-#     Decide whether to call tools or finish.
-#     """
-#     last_message = state["messages"][-1]
-
-#     if last_message.tool_calls:
-#         return "tools"
-#     return "__end__"
-# print("Agent nodes defined")
 
