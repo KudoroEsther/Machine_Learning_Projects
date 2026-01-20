@@ -28,7 +28,7 @@ def setup_openai_api() -> str:
     Load OpenAI API key from environment
     """
     load_dotenv()
-    api_key = os.getenv("paid_api")
+    api_key = os.getenv("paid_api2")
 
     if not api_key:
         raise ValueError(

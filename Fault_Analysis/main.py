@@ -1,3 +1,8 @@
+"""
+Added a post endpoint for the llm, it predicts the fault and sends it to the builder agent
+where solutions are provided based on the rag document
+"""
+
 from fault_rag_using_utils import(
     api_key,
     llm,
@@ -12,6 +17,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 import pandas as pd
 import numpy as np
+import uvicorn
 
 # Loading the saved model
 pipeline = joblib.load("detection_pipeline.pkl")
@@ -93,7 +99,7 @@ def diagnose(line: FaultFeatures):
         "retrieved_docs": "",
         "final_answer": ""
     })
-    
+
     return answer
 
     # if prediction == "No fault":

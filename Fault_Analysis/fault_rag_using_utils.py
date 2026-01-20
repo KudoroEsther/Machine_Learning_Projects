@@ -87,7 +87,7 @@ if os.path.exists(path_dir):
     vectorstore = load_existing_vectorstore(embeddings=embeddings)
 
 else:
-    vectorstore = create_vectorstore(
+    vectorstore = create_vectorstore(chunks=chunks,
     embeddings=embeddings
     )
 
@@ -196,6 +196,10 @@ builder = StateGraph(FaultAgentState)
 builder.add_node("build_query", build_query)
 builder.add_node("finalizer", finalizer)
 builder.add_node("assistant", assistant)
+builder.add_node("tools", ToolNode(tools)
+                 
+                 
+                 )
 
 
 builder.add_edge(START, "build_query")
