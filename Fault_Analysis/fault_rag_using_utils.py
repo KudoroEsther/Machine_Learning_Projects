@@ -14,6 +14,12 @@ from dotenv import load_dotenv
 from IPython.display import Image, display
 from typing import Literal, TypedDict, Optional
 import os
+import joblib
+from fastapi import FastAPI
+from pydantic import BaseModel
+import uvicorn
+import numpy as np
+import pandas as pd
 
 print("All imports successful")
 
@@ -24,7 +30,8 @@ from utils_openai import (
     create_llm,
     create_vectorstore,
     system_prompt_def,
-    load_and_chunk_documents
+    load_and_chunk_documents,
+    load_existing_vectorstore
 )
 
 """
@@ -47,6 +54,9 @@ test agent
 
 """
 
+""" As of 2026/1/20 Adding the FastAPI part and merging RAG with ML model
+"""
+
 # Load API key
 api_key = setup_openai_api()
 print("API key loaded successfully!")
@@ -56,10 +66,80 @@ llm = create_llm(api_key, temperature=0)
 print(f"LLM initialized: {llm.model_name}")
 
 
+# Loading the saved model
+pipeline = joblib.load("detection_pipeline.pkl")
+
+
+#Initializing the application
+app = FastAPI()
+
+#creating the pydantic model
+class FaultFeatures(BaseModel):
+    Va: float
+    Vb: float
+    Vc: float
+    Ia: float
+    Ib: float
+    Ic: float
+
+# creating endpoints
+@app.get("/")
+def welcome():
+    return{
+        "message": "Welcome to Transmission Line Fault Predictor"
+    }
+
+
+@app.post("/predict")
+def predict(line: FaultFeatures):
+
+    features = pd.DataFrame([{
+        "Va": line.Va,
+        "Vb": line.Vb,
+        "Vc": line.Vc,
+        "Ia": line.Ia,
+        "Ib": line.Ib,
+        "Ic": line.Ic
+    }])
+
+    prediction = pipeline.predict(features)[0]
+    proba = pipeline.predict_proba(features).max()
+
+    if prediction == "No fault":
+        return {
+            "fault_label": "no_fault",
+            "fault": prediction,
+            "confidence": round(float(proba), 3)
+        }
+
+    return {
+        "fault_label": "fault",
+        "fault": prediction,
+        "confidence": round(float(proba), 3)
+    }
+
+#GENAI Integration
+FAULT_EXPLANATIONS = {
+    "LLLG fault": {
+        "name": "Three-Phase-to-Ground Fault",
+        "description": "All three phases are shorted to ground."
+    },
+    "LLG fault": {
+        "name": "Double Line-to-Ground Fault",
+        "description": "Two phases are shorted together and to ground."
+    },
+    "LG fault": {
+        "name": "Single Line-to-Ground Fault",
+        "description": "One phase is shorted to ground."
+    }
+}
+
 # Document Collection
 # the sizes are tentative
+data_path = r"C:\Users\ncc333\Desktop\ML_projects\Fault_Analysis\Fault_docs"
+
 chunks = load_and_chunk_documents(
-    data_path="",
+    data_path= data_path,
     chunk_size=1000,
     chunk_overlap=100)
 print("Documents loaded and chunked")
@@ -68,10 +148,15 @@ print("Documents loaded and chunked")
 # Vector store and embedding
 embeddings = create_embeddings(api_key)
 print("Embeddings model initialized")
+path_dir = ("./chroma_db_fault_rag")
 
-vectorstore = create_vectorstore(
+if os.path.exists(path_dir):
+    vectorstore = load_existing_vectorstore(embeddings=embeddings)
+
+else:
+    vectorstore = create_vectorstore(
     embeddings=embeddings
-)
+    )
 
 #Retriever toool
 @tool
@@ -186,7 +271,16 @@ builder.add_conditional_edges(
     "assistant", 
     should_continue,
     {"tools": "tools", "finalizer": "finalizer"})
-builder.add_edge(should_continue, END)
+builder.add_edge("finalizer", END)
+
+builder_agent = builder.compile()
+
+answer = builder_agent.invoke({
+    "fault_label": "",
+    "confidence": "",
+    "retrieved_docs": "",
+    "final_answer": ""
+})
 
 # # Bind tool to LLM
 # tools = [retrieve_documents]
