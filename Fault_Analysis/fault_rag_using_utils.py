@@ -55,6 +55,8 @@ test agent
 """
 
 """ As of 2026/1/20 Adding the FastAPI part and merging RAG with ML model
+
+I need to store the output of my ml post in a database. Alternatively, I could add my ML and RAG to a single post
 """
 
 # Load API key
@@ -107,14 +109,14 @@ def predict(line: FaultFeatures):
 
     if prediction == "No fault":
         return {
-            "fault_label": "no_fault",
-            "fault": prediction,
+            "status": "no_fault",
+            "fault_lable": prediction,
             "confidence": round(float(proba), 3)
         }
 
     return {
-        "fault_label": "fault",
-        "fault": prediction,
+        "status": "fault",
+        "fault_label": prediction,
         "confidence": round(float(proba), 3)
     }
 
