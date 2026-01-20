@@ -188,7 +188,7 @@ def should_continue(state: FaultAgentState) -> Literal["tools", "finalizer"]:
 
     if last_message.tool_calls:
         return "tools"
-    return "__end__"
+    return "finalizer"
 print("Agent nodes defined")
 
 builder = StateGraph(FaultAgentState)
