@@ -147,7 +147,7 @@ from langchain_chroma import Chroma
 def create_vectorstore(
     chunks: List[Document],
     embeddings: OpenAIEmbeddings,
-    collection_name: str = "tax_collection",
+    collection_name: str = "agentic_fault_docs",
     persist_directory: str = "./chroma_db_fault_rag"
 ):
     """

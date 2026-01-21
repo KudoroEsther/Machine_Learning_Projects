@@ -214,7 +214,7 @@ builder_agent = builder.compile()
 
 answer = builder_agent.invoke({
     "fault_label": "",
-    "confidence": "",
+    "confidence": 0,
     "retrieved_docs": "",
     "final_answer": ""
 })
