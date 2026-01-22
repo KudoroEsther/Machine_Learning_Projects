@@ -178,20 +178,24 @@ param_grid = {
 
 random_search = RandomizedSearchCV(estimator=pipeline, param_distributions=param_grid, n_iter=5, cv=5, verbose=2, random_state=234, n_jobs=1)
 random_search.fit(X_train, y_train)
-print(f"Best parameters for Random Forest {random_search.best_params_}")
+# print(f"Best parameters for Random Forest {random_search.best_params_}")
 
 #Cross validation
-best_pipeline = random_search.best_estimator_
+# best_pipeline = random_search.best_estimator_
+
+#Trying to save the best parameters so I don't have to rerun
+joblib.dump(random_search.best_estimator_, "best_pipeline.joblib")
+best_pipeline = joblib.load("best_pipeline.joblib")
 
 #might be x_train againt y_train
-cv_score = cross_val_score(best_pipeline, X, y, cv=5)
-# cv_score = cross_val_score(best_model, X_train, y_train, cv=5)
-print(f"Cross validation scores for Random Forest : {cv_score}")
-print(f"Mean cross validation score: {cv_score.mean()}")
+# cv_score = cross_val_score(best_pipeline, X, y, cv=5)
+# # cv_score = cross_val_score(best_model, X_train, y_train, cv=5)
+# print(f"Cross validation scores for Random Forest : {cv_score}")
+# print(f"Mean cross validation score: {cv_score.mean()}")
 
 y_pred = best_pipeline.predict(X_test)
-print(f"\nClassification Report: ")
-print(classification_report(y_test, y_pred, zero_division=1))
+# print(f"\nClassification Report: ")
+# print(classification_report(y_test, y_pred, zero_division=1))
 
 
 #Saving preprocessed data

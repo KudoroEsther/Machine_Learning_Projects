@@ -2,6 +2,7 @@
 Added a post endpoint for the llm, it predicts the fault and sends it to the builder agent
 where solutions are provided based on the rag document
 """
+from fault_Copy import FeatureEngineer
 
 from fault_rag_using_utils import(
     api_key,
