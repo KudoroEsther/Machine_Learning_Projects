@@ -210,7 +210,7 @@ builder.add_conditional_edges(
     {"tools": "tools", "finalizer": "finalizer"})
 builder.add_edge("finalizer", END)
 
-builder_agent = builder.compile(checkpointer=MemorySaver())
+builder_agent = builder.compile()
 
 answer = builder_agent.invoke({
     "fault_label": "",

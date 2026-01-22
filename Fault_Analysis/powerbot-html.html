@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PowerBot - Transmission Line Fault Analyzer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        .animate-pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        .animate-bounce-dot {
+            animation: bounce 1s infinite;
+        }
+        .animate-bounce-dot-delay-1 {
+            animation: bounce 1s infinite;
+            animation-delay: 0.2s;
+        }
+        .animate-bounce-dot-delay-2 {
+            animation: bounce 1s infinite;
+            animation-delay: 0.4s;
+        }
+    </style>
+</head>
+<body class="m-0 p-0">
+    <div class="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-slate-900 flex items-center justify-center p-4">
+        <!-- Animated background effect -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <div class="absolute w-96 h-96 bg-blue-500 rounded-full opacity-10 blur-3xl -top-48 -left-48 animate-pulse-slow"></div>
+            <div class="absolute w-96 h-96 bg-cyan-500 rounded-full opacity-10 blur-3xl -bottom-48 -right-48 animate-pulse-slow" style="animation-delay: 1s;"></div>
+        </div>
+
+        <div class="w-full max-w-3xl bg-slate-800 rounded-2xl shadow-2xl overflow-hidden border border-blue-500/30 relative z-10">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-blue-600 to-cyan-600 p-6 flex items-center gap-3">
+                <div class="bg-white/20 p-3 rounded-lg backdrop-blur-sm">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-white">PowerBot</h1>
+                    <p class="text-blue-100 text-sm">Transmission Line Fault Analyzer</p>
+                </div>
+                <div class="ml-auto">
+                    <svg class="w-6 h-6 text-white animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            <div id="messagesContainer" class="h-96 overflow-y-auto p-6 space-y-4 bg-slate-900/50">
+                <!-- Initial message -->
+                <div class="flex justify-start">
+                    <div class="max-w-[80%] rounded-lg p-4 bg-slate-700 text-gray-100 border border-blue-500/20">
+                        <div class="whitespace-pre-wrap text-sm leading-relaxed">
+                            Welcome to PowerBot! I can help diagnose transmission line faults. Please provide the voltage and current readings for phases A, B, and C.
+                        </div>
+                        <div class="text-xs opacity-60 mt-2" id="initialTime"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Section -->
+            <div class="p-6 bg-slate-800 border-t border-blue-500/30">
+                <div class="space-y-4">
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-blue-300 text-xs font-semibold mb-1">Va (Voltage A)</label>
+                            <input type="number" id="Va" step="any" placeholder="0.0" 
+                                class="w-full bg-slate-700 border border-blue-500/30 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-blue-300 text-xs font-semibold mb-1">Vb (Voltage B)</label>
+                            <input type="number" id="Vb" step="any" placeholder="0.0"
+                                class="w-full bg-slate-700 border border-blue-500/30 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-blue-300 text-xs font-semibold mb-1">Vc (Voltage C)</label>
+                            <input type="number" id="Vc" step="any" placeholder="0.0"
+                                class="w-full bg-slate-700 border border-blue-500/30 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-cyan-300 text-xs font-semibold mb-1">Ia (Current A)</label>
+                            <input type="number" id="Ia" step="any" placeholder="0.0"
+                                class="w-full bg-slate-700 border border-cyan-500/30 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                        </div>
+                        <div>
+                            <label class="block text-cyan-300 text-xs font-semibold mb-1">Ib (Current B)</label>
+                            <input type="number" id="Ib" step="any" placeholder="0.0"
+                                class="w-full bg-slate-700 border border-cyan-500/30 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                        </div>
+                        <div>
+                            <label class="block text-cyan-300 text-xs font-semibold mb-1">Ic (Current C)</label>
+                            <input type="number" id="Ic" step="any" placeholder="0.0"
+                                class="w-full bg-slate-700 border border-cyan-500/30 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                        </div>
+                    </div>
+                    <button id="analyzeBtn" onclick="handleSubmit()"
+                        class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                        </svg>
+                        <span>Analyze Fault</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set initial timestamp
+        document.getElementById('initialTime').textContent = new Date().toLocaleTimeString();
+
+        function addMessage(type, content) {
+            const messagesContainer = document.getElementById('messagesContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `flex ${type === 'user' ? 'justify-end' : 'justify-start'}`;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            const bgClass = type === 'user' 
+                ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white'
+                : 'bg-slate-700 text-gray-100 border border-blue-500/20';
+            
+            messageDiv.innerHTML = `
+                <div class="max-w-[80%] rounded-lg p-4 ${bgClass}">
+                    <div class="whitespace-pre-wrap text-sm leading-relaxed">${content}</div>
+                    <div class="text-xs opacity-60 mt-2">${timestamp}</div>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function showLoading() {
+            const messagesContainer = document.getElementById('messagesContainer');
+            const loadingDiv = document.createElement('div');
+            loadingDiv.id = 'loadingMessage';
+            loadingDiv.className = 'flex justify-start';
+            loadingDiv.innerHTML = `
+                <div class="bg-slate-700 rounded-lg p-4 border border-blue-500/20">
+                    <div class="flex items-center gap-2">
+                        <div class="flex gap-1">
+                            <div class="w-2 h-2 bg-blue-400 rounded-full animate-bounce-dot"></div>
+                            <div class="w-2 h-2 bg-blue-400 rounded-full animate-bounce-dot-delay-1"></div>
+                            <div class="w-2 h-2 bg-blue-400 rounded-full animate-bounce-dot-delay-2"></div>
+                        </div>
+                        <span class="text-gray-300 text-sm">Analyzing...</span>
+                    </div>
+                </div>
+            `;
+            messagesContainer.appendChild(loadingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function hideLoading() {
+            const loadingMessage = document.getElementById('loadingMessage');
+            if (loadingMessage) {
+                loadingMessage.remove();
+            }
+        }
+
+        async function handleSubmit() {
+            const Va = document.getElementById('Va').value;
+            const Vb = document.getElementById('Vb').value;
+            const Vc = document.getElementById('Vc').value;
+            const Ia = document.getElementById('Ia').value;
+            const Ib = document.getElementById('Ib').value;
+            const Ic = document.getElementById('Ic').value;
+
+            // Validate all fields are filled
+            if (!Va || !Vb || !Vc || !Ia || !Ib || !Ic) {
+                addMessage('bot', '⚠️ Please fill in all voltage and current readings.');
+                return;
+            }
+
+            // Add user message
+            const userMessage = `📊 Readings Submitted:\nVa: ${Va}V, Vb: ${Vb}V, Vc: ${Vc}V\nIa: ${Ia}A, Ib: ${Ib}A, Ic: ${Ic}A`;
+            addMessage('user', userMessage);
+
+            // Disable button and show loading
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            analyzeBtn.disabled = true;
+            analyzeBtn.classList.add('from-gray-600', 'to-gray-600');
+            analyzeBtn.classList.remove('from-blue-600', 'to-cyan-600', 'hover:from-blue-700', 'hover:to-cyan-700');
+            showLoading();
+
+            try {
+                const response = await fetch('http://localhost:8000/diagnose', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        Va: parseFloat(Va),
+                        Vb: parseFloat(Vb),
+                        Vc: parseFloat(Vc),
+                        Ia: parseFloat(Ia),
+                        Ib: parseFloat(Ib),
+                        Ic: parseFloat(Ic)
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to get diagnosis');
+                }
+
+                const result = await response.json();
+                
+                // Format the response
+                let botResponse = '';
+                if (result.fault_label === 'No fault') {
+                    botResponse = `✅ **System Status: Normal**\n\nNo fault detected. The transmission line is operating within normal parameters.\n\nConfidence: ${(result.confidence * 100).toFixed(1)}%`;
+                } else {
+                    botResponse = `⚡ Fault Detected\n\nType: ${result.fault_label}\nConfidence: ${(result.confidence * 100).toFixed(1)}%\n\n${result.final_answer.content}`;
+                }
+                
+                hideLoading();
+                addMessage('bot', botResponse);
+                
+                // Reset form
+                document.getElementById('Va').value = '';
+                document.getElementById('Vb').value = '';
+                document.getElementById('Vc').value = '';
+                document.getElementById('Ia').value = '';
+                document.getElementById('Ib').value = '';
+                document.getElementById('Ic').value = '';
+            } catch (error) {
+                hideLoading();
+                addMessage('bot', `❌ Error: ${error.message}. Please make sure the API server is running on http://localhost:8000`);
+            } finally {
+                // Re-enable button
+                analyzeBtn.disabled = false;
+                analyzeBtn.classList.remove('from-gray-600', 'to-gray-600');
+                analyzeBtn.classList.add('from-blue-600', 'to-cyan-600', 'hover:from-blue-700', 'hover:to-cyan-700');
+            }
+        }
+
+        // Allow Enter key to submit
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                handleSubmit();
+            }
+        });
+    </script>
+</body>
+</html>

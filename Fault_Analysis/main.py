@@ -3,6 +3,7 @@ Added a post endpoint for the llm, it predicts the fault and sends it to the bui
 where solutions are provided based on the rag document
 """
 from fault_Copy import FeatureEngineer
+from fastapi.middleware.cors import CORSMiddleware
 
 from fault_rag_using_utils import(
     api_key,
@@ -28,6 +29,15 @@ pipeline = joblib.load("detection_pipeline.pkl")
 
 #Initializing the application
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 #creating the pydantic model
 class FaultFeatures(BaseModel):
@@ -103,7 +113,13 @@ def diagnose(line: FaultFeatures):
         "final_answer": ""
     })
 
-    return answer
+    # return answer
+    print(answer)
+    return {
+        "fault_label": prediction,
+        "confidence": proba,
+        "final_answer": answer.get("final_answer")
+    }
 
     # if prediction == "No fault":
     #     return {
