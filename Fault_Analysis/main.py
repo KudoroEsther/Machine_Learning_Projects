@@ -114,7 +114,7 @@ def diagnose(line: FaultFeatures):
     })
 
     # return answer
-    print(answer)
+    # print(answer)
     return {
         "fault_label": prediction,
         "confidence": proba,
