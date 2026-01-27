@@ -1,4 +1,4 @@
-from fault_Copy import FeatureEngineer
+from Fault_Analysis.Main_fault.fault_Copy import FeatureEngineer
 
 from fastapi import FastAPI
 from pydantic import BaseModel
