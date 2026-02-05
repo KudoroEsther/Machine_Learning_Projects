@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 import numpy as np
 import pandas as pd
 
-from utils_openai import (
+from Fault_Analysis.Main_fault.utils_openai import (
     setup_openai_api,
     create_llm,
     create_embeddings,

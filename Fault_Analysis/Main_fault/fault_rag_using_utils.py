@@ -24,7 +24,7 @@ import pandas as pd
 print("All imports successful")
 
 
-from utils_openai import (
+from Fault_Analysis.Main_fault.utils_openai import (
     setup_openai_api,
     create_embeddings,
     create_llm,
