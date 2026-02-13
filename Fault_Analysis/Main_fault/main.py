@@ -2,7 +2,7 @@
 Added a post endpoint for the llm, it predicts the fault and sends it to the builder agent
 where solutions are provided based on the rag document
 """
-from fault_Copy import FeatureEngineer
+from Feature_engineer import FeatureEngineer
 from fastapi.middleware.cors import CORSMiddleware
 
 from fault_rag_using_utils import(
@@ -24,7 +24,7 @@ import uvicorn
 
 
 # Loading the saved model
-pipeline = joblib.load("detection_pipeline.pkl")
+pipeline = joblib.load("best_pipeline.pkl")
 
 
 #Initializing the application

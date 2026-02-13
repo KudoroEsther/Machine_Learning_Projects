@@ -225,7 +225,7 @@
                 if (result.fault_label === 'No fault') {
                     botResponse = `✅ **System Status: Normal**\n\nNo fault detected. The transmission line is operating within normal parameters.\n\nConfidence: ${(result.confidence * 100).toFixed(1)}%`;
                 } else {
-                    botResponse = `⚡ Fault Detected\n\nType: ${result.fault_label}\nConfidence: ${(result.confidence * 100).toFixed(1)}%\n\n${result.final_answer.content}`;
+                    botResponse = `⚡ Fault Detected\n\nType: ${result.fault_label}\n\n${result.final_answer.content}`;
                 }
                 
                 hideLoading();
