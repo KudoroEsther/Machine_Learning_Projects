@@ -69,7 +69,7 @@ print(f"LLM initialized: {llm.model_name}")
 
 # Document Collection
 # the sizes are tentative
-data_path = r"C:\Users\ncc333\Desktop\ML_projects\Fault_Analysis\Fault_docs"
+data_path = r"C:\Users\owner\Desktop\ML_projects\Fault_Analysis\Fault_docs"
 
 chunks = load_and_chunk_documents(
     data_path= data_path,
